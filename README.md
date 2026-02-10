@@ -6,7 +6,7 @@
 - `bun` installed, dependencies available
 - A personal space on testnet to publish to
 - Geo Browser open in a tab: `https://geobrowser.io/space/<DEMO_SPACE_ID>`
-- See GRC-20 spec at: `https://github.com/geobrowser/grc-20/blob/main/spec.md`
+- See GRC-20 spec at: [https://github.com/geobrowser/grc-20/blob/main/spec.md](https://github.com/geobrowser/grc-20/blob/main/spec.md)
 
 ---
 
