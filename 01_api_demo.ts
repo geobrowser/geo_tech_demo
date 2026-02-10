@@ -10,7 +10,7 @@
  *   6. Explore backlinks (reverse relations)
  *
  * Usage:
- *   bun run demo_api.ts
+ *   bun run 01_api_demo.ts
  *
  * API endpoint: https://testnet-api.geobrowser.io/graphql
  *
@@ -23,19 +23,8 @@
 
 import dotenv from "dotenv";
 import { gql } from "./src/functions";
+import { ROOT_SPACE_ID, TYPES } from "./src/constants";
 dotenv.config();
-
-// ─── Known IDs ───────────────────────────────────────────────────────────────
-
-const ROOT_SPACE_ID = "a19c345ab9866679b001d7d2138d88a1";
-
-const TYPE_IDS = {
-  type:     "e7d737c536764c609fa16aa64a8c90ad",
-  property: "808a04ceb21c4d888ad12e240613e5ca",
-  person:   "7ed45f2bc48b419e8e4664d5ff680b0d",
-  project:  "484a18c5030a499cb0f2ef588ff16d50",
-  topic:    "5ef5a5860f274d8e8f6c59ae5b3e89e2",
-};
 
 // ─── Demo 1: Get Space Information ───────────────────────────────────────────
 
@@ -112,7 +101,7 @@ async function demo3_filterByType() {
   const data = await gql(`{
     entities(
       spaceId: "${ROOT_SPACE_ID}"
-      typeId: "${TYPE_IDS.type}"
+      typeId: "${TYPES.type}"
       first: 15
       filter: { name: { isNull: false } }
     ) {
@@ -137,7 +126,7 @@ async function demo4_entityDetails() {
   console.log("Demo 4: Get Entity Details — Values & Relations");
   console.log("═══════════════════════════════════════════════════════════════\n");
 
-  const personTypeId = TYPE_IDS.person;
+  const personTypeId = TYPES.person;
 
   // Get values (property-value triples) — UUIDFilter uses `is` for equality
   const data = await gql(`{
@@ -247,7 +236,7 @@ async function demo6_backlinks() {
 
   // Find relations that point TO the "Type" entity —
   // these are entities with Types: Type (i.e., type definitions)
-  const typeEntityId = TYPE_IDS.type;
+  const typeEntityId = TYPES.type;
 
   const data = await gql(`{
     relations(

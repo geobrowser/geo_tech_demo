@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Graph, type Op } from '@geoprotocol/geo-sdk';
-import { printOps, publishOps } from './src/functions.js';
+import { printOps, publishOps } from './src/functions';
 
 function readOpsFromFile(dir_in: string, fn: string): any {
   const filePath = path.join(dir_in, fn);
