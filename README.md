@@ -1,4 +1,4 @@
-# Geo SDK Demo — Presenter Outline
+# Geo SDK Demo — Outline
 
 ## Prerequisites (before the demo)
 
