@@ -6,6 +6,7 @@
 - `bun` installed, dependencies available
 - A personal space on testnet to publish to
 - Geo Browser open in a tab: `https://geobrowser.io/space/<DEMO_SPACE_ID>`
+- See GRC-20 spec at: `https://github.com/geobrowser/grc-20/blob/main/spec.md`
 
 ---
 
@@ -127,4 +128,4 @@ bun run 03_delete_demo.ts
 2. **SDK builds ops, you publish them** — `Graph.*` methods return ops arrays; batch them and publish once
 3. **Ontology IDs are the glue** — type and property IDs from the root space define the schema
 4. **Content model is composable** — text blocks, data blocks, and images attach to any entity via the Blocks relation
-5. **Publishing is space-aware** — personal spaces publish directly; DAO spaces go through a proposal flow
+5. **Publishing is space-aware** — personal spaces publish directly; DAO spaces go through a proposal / governance flow
