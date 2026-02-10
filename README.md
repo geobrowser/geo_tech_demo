@@ -18,7 +18,7 @@
   - `projects.json` — entities with text blocks, avatar images, and topic relations
 - Explain the goal: turn this flat JSON into a rich, interconnected knowledge graph on-chain
 
-## Part 2: Walk Through `demo_publish.ts`
+## Part 2: Walk Through `02_publish_demo.ts`
 
 ### 2a: Ontology IDs and the Property Registry
 
@@ -40,7 +40,7 @@
 ### 2c: Content Blocks — Text, Images, Data
 
 - **Text Blocks** (Step 5) — each block is its own entity attached via a Blocks relation
-  - Blocks relation uses `position` (fractional indexing via `Position.generate()`) for ordering
+  - Blocks relation uses `position` (fractional indexing via `Position.generateBetween()`) for ordering
   - Content is markdown stored in the `markdown_content` property
   - Content comes from the `blocks` array in `projects.json`
 - **Avatar Images** (Step 5b) — `Graph.createImage()` handles IPFS upload automatically
@@ -59,12 +59,12 @@
   - Queries the API to determine space type (personal vs DAO)
   - For personal spaces: `personalSpace.publishEdit()`
   - For DAO spaces: resolves caller's member space from members/editors list, then `daoSpace.proposeEdit()`
-  - Sends the transaction via a Pimlico-sponsored smart account (gasless on testnet)
+  - Sends the transaction via the SDK's `getSmartAccountWalletClient` (gasless on testnet)
 
 ### 2e: Run It
 
 ```bash
-bun run demo_publish.ts
+bun run 02_publish_demo.ts
 ```
 
 - Watch the console output walk through each step
@@ -72,7 +72,7 @@ bun run demo_publish.ts
 
 ---
 
-## Part 3: Querying — Walk Through `demo_api.ts`
+## Part 3: Querying — Walk Through `01_api_demo.ts`
 
 - Uses the **Geo GraphQL API** (`https://testnet-api.geobrowser.io/graphql`)
 - Key API notes to mention:
@@ -102,12 +102,12 @@ bun run demo_publish.ts
 ### Run It
 
 ```bash
-bun run demo_api.ts
+bun run 01_api_demo.ts
 ```
 
 ---
 
-## Part 4: Cleanup — `delete_ops_from_file.ts`
+## Part 4: Cleanup — `03_delete_demo.ts`
 
 - Reads the saved ops from `data_to_delete/demo_publish_ops.txt` (written by the publish step)
 - Generates inverse operations:
@@ -116,7 +116,7 @@ bun run demo_api.ts
 - Publishes the delete ops using the same `publishOps()` helper
 
 ```bash
-bun run delete_ops_from_file.ts
+bun run 03_delete_demo.ts
 ```
 
 ---
