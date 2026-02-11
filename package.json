@@ -7,12 +7,12 @@
     "api-demo": "bun run demo_api.ts"
   },
   "dependencies": {
-    "@geoprotocol/geo-sdk": "^0.7.0",
-    "dotenv": "^16.4.7",
-    "permissionless": "^0.2.0",
-    "viem": "^2.23.2"
+    "@geoprotocol/geo-sdk": "^0.9.0",
+    "dotenv": "^17.2.4",
+    "viem": "^2.45.3"
   },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "typescript": "^5.9.3"
   }
 }
