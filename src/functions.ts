@@ -1,8 +1,12 @@
+import {
+  daoSpace,
+  getSmartAccountWalletClient,
+  personalSpace,
+  type Op,
+} from "@geoprotocol/geo-sdk";
+import dotenv from "dotenv";
 import * as fs from "fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
-import { personalSpace, daoSpace, type Op, getSmartAccountWalletClient } from "@geoprotocol/geo-sdk";
 import { privateKeyToAccount } from "viem/accounts";
 
 dotenv.config();
@@ -43,12 +47,13 @@ export async function publishOps(ops: Op[], editName: string) {
   const spaceId = process.env.DEMO_SPACE_ID;
   if (!spaceId) throw new Error("DEMO_SPACE_ID not set in .env");
 
-  const privateKey = process.env.PK_SW as `0x${string}`
+  const privateKey = process.env.PK_SW as `0x${string}`;
   if (!privateKey) throw new Error("PK_SW not set in .env");
 
   const account = privateKeyToAccount(privateKey);
-  const author = account.address
-  if (!author) throw new Error("Smart Wallet address not found from private key.");
+  const author = account.address;
+  if (!author)
+    throw new Error("Smart Wallet address not found from private key.");
 
   console.log(`\nQuerying space ${spaceId} from the API...`);
 
@@ -75,7 +80,7 @@ export async function publishOps(ops: Op[], editName: string) {
       name: editName,
       spaceId,
       ops,
-      author,
+      author: spaceId, // this is the spaceId of the personal space
       network: "TESTNET",
     });
     console.log("CID:", result.cid);
@@ -84,8 +89,10 @@ export async function publishOps(ops: Op[], editName: string) {
     calldata = result.calldata;
   } else {
     // Check both members and editors lists for the caller's space
-    const members: Array<{ memberSpaceId: string }> = spaceData.space.membersList;
-    const editors: Array<{ memberSpaceId: string }> = spaceData.space.editorsList;
+    const members: Array<{ memberSpaceId: string }> =
+      spaceData.space.membersList;
+    const editors: Array<{ memberSpaceId: string }> =
+      spaceData.space.editorsList;
     const allCandidates = [...members, ...editors];
     let callerSpaceId: string | undefined;
 
@@ -102,8 +109,8 @@ export async function publishOps(ops: Op[], editName: string) {
     if (!callerSpaceId) {
       throw new Error(
         `Your wallet (${author}) is not a member or editor of DAO space ${spaceId}. ` +
-        `Members: ${members.map((m) => m.memberSpaceId).join(", ")}  ` +
-        `Editors: ${editors.map((e) => e.memberSpaceId).join(", ")}`
+          `Members: ${members.map((m) => m.memberSpaceId).join(", ")}  ` +
+          `Editors: ${editors.map((e) => e.memberSpaceId).join(", ")}`,
       );
     }
     console.log(`  Caller member space: ${callerSpaceId}`);
@@ -111,7 +118,7 @@ export async function publishOps(ops: Op[], editName: string) {
     const result = await daoSpace.proposeEdit({
       name: editName,
       ops,
-      author,
+      author, // will fails since it must be the author spaceId
       network: "TESTNET",
       callerSpaceId: `0x${callerSpaceId}` as `0x${string}`,
       daoSpaceId: `0x${spaceId}` as `0x${string}`,
@@ -124,9 +131,9 @@ export async function publishOps(ops: Op[], editName: string) {
   }
 
   const client = await getSmartAccountWalletClient({
-      privateKey:  privateKey,
-      rpcUrl: TESTNET_RPC_URL
-    });
+    privateKey: privateKey,
+    rpcUrl: TESTNET_RPC_URL,
+  });
   const txHash = await client.sendTransaction({ to, data: calldata });
   console.log("Transaction hash:", txHash);
   return txHash;
@@ -135,11 +142,9 @@ export async function publishOps(ops: Op[], editName: string) {
 // ─── printOps ────────────────────────────────────────────────────────────────
 // Serializes ops to a JSON file, converting UUID byte arrays to hex strings.
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 function isUuidByteArray(obj: any): boolean {
-  if (typeof obj !== "object" || obj === null || Array.isArray(obj)) return false;
+  if (typeof obj !== "object" || obj === null || Array.isArray(obj))
+    return false;
   const keys = Object.keys(obj);
   if (keys.length !== 16) return false;
   for (let i = 0; i < 16; i++) {
@@ -159,7 +164,12 @@ function uuidBytesToString(obj: any): string {
 function convertUuidBytes(obj: any): any {
   if (obj === null || obj === undefined) return obj;
   if (typeof obj !== "object") {
-    if (typeof obj === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(obj)) {
+    if (
+      typeof obj === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        obj,
+      )
+    ) {
       return obj.replace(/-/g, "");
     }
     return obj;
