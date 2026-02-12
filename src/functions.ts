@@ -7,7 +7,7 @@ import {
 import dotenv from "dotenv";
 import * as fs from "fs";
 import path from "node:path";
-import { privateKeyToAccount } from "viem/accounts";
+import { privateKeyToAccount, privateKeyToAddress } from "viem/accounts";
 
 dotenv.config();
 
@@ -50,8 +50,16 @@ export async function publishOps(ops: Op[], editName: string) {
   const privateKey = process.env.PK_SW as `0x${string}`;
   if (!privateKey) throw new Error("PK_SW not set in .env");
 
-  const account = privateKeyToAccount(privateKey);
-  const author = account.address;
+  const client = await getSmartAccountWalletClient({
+    privateKey: privateKey,
+    rpcUrl: TESTNET_RPC_URL,
+  });
+  const author = client.account.address
+
+  const personalSpaceData = await gql(`{
+    spaces(filter: { address: { is: "${author}" } }) { id type }
+  }`);
+  
   if (!author)
     throw new Error("Smart Wallet address not found from private key.");
 
@@ -88,37 +96,42 @@ export async function publishOps(ops: Op[], editName: string) {
     to = result.to;
     calldata = result.calldata;
   } else {
-    // Check both members and editors lists for the caller's space
+    // Resolve the caller's wallet address to their personal space ID
+    
+    const callerSpace = personalSpaceData.spaces?.find(
+      (s: any) => s.type === "PERSONAL",
+    );
+    if (!callerSpace) {
+      throw new Error(
+        `No personal space found for wallet ${author}. ` +
+          `Make sure this wallet has a personal space on the Geo testnet.`,
+      );
+    }
+    const callerSpaceId: string = callerSpace.id;
+    console.log(`  Caller personal space: ${callerSpaceId}`);
+
+    // Verify the caller's personal space is a member or editor of the DAO
     const members: Array<{ memberSpaceId: string }> =
       spaceData.space.membersList;
     const editors: Array<{ memberSpaceId: string }> =
       spaceData.space.editorsList;
     const allCandidates = [...members, ...editors];
-    let callerSpaceId: string | undefined;
+    const isMemberOrEditor = allCandidates.some(
+      (m) => m.memberSpaceId === callerSpaceId,
+    );
 
-    for (const m of allCandidates) {
-      const memberData = await gql(`{
-        space(id: "${m.memberSpaceId}") { address }
-      }`);
-      if (memberData.space?.address?.toLowerCase() === author.toLowerCase()) {
-        callerSpaceId = m.memberSpaceId;
-        break;
-      }
-    }
-
-    if (!callerSpaceId) {
+    if (!isMemberOrEditor) {
       throw new Error(
-        `Your wallet (${author}) is not a member or editor of DAO space ${spaceId}. ` +
+        `Your personal space (${callerSpaceId}) is not a member or editor of DAO space ${spaceId}. ` +
           `Members: ${members.map((m) => m.memberSpaceId).join(", ")}  ` +
           `Editors: ${editors.map((e) => e.memberSpaceId).join(", ")}`,
       );
     }
-    console.log(`  Caller member space: ${callerSpaceId}`);
 
     const result = await daoSpace.proposeEdit({
       name: editName,
       ops,
-      author, // will fails since it must be the author spaceId
+      author: callerSpaceId,
       network: "TESTNET",
       callerSpaceId: `0x${callerSpaceId}` as `0x${string}`,
       daoSpaceId: `0x${spaceId}` as `0x${string}`,
@@ -130,10 +143,6 @@ export async function publishOps(ops: Op[], editName: string) {
     calldata = result.calldata;
   }
 
-  const client = await getSmartAccountWalletClient({
-    privateKey: privateKey,
-    rpcUrl: TESTNET_RPC_URL,
-  });
   const txHash = await client.sendTransaction({ to, data: calldata });
   console.log("Transaction hash:", txHash);
   return txHash;
