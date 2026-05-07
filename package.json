@@ -7,7 +7,7 @@
     "api-demo": "bun run demo_api.ts"
   },
   "dependencies": {
-    "@geoprotocol/geo-sdk": "^0.10.1",
+    "@geoprotocol/geo-sdk": "^0.18.0",
     "dotenv": "^17.2.4",
     "viem": "^2.45.3"
   },
